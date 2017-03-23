@@ -41,6 +41,9 @@ COPY clean-logs.sh /clean-logs.sh
 # Add startup script
 COPY virtuoso.sh /virtuoso.sh
 
+# Add crudini tool
+RUN apt-get install -y crudini && apt-get clean
+
 VOLUME /data
 WORKDIR /data
 EXPOSE 8890
