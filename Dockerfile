@@ -1,25 +1,30 @@
-FROM ubuntu:16.04
+FROM debian:jessie
 
-# Set Virtuoso commit SHA to Virtuoso 7.2.4 release (25/04/2016)
-ENV VIRTUOSO_COMMIT 96055f6a70a92c3098a7e786592f4d8ba8aae214
+MAINTAINER Benjamin Rokseth <benjamin.rokseth@kul.oslo.kommune.no>
 
-# Build virtuoso from source and clean up afterwards
-RUN apt-get update \
-        && apt-get install -y build-essential autotools-dev autoconf automake unzip wget net-tools libtool flex bison gperf gawk m4 libssl-dev libreadline-dev openssl crudini \
-        && wget https://github.com/openlink/virtuoso-opensource/archive/${VIRTUOSO_COMMIT}.zip \
-        && unzip ${VIRTUOSO_COMMIT}.zip \
-        && rm ${VIRTUOSO_COMMIT}.zip \
-        && cd virtuoso-opensource-${VIRTUOSO_COMMIT} \
-        && ./autogen.sh \
-        && export CFLAGS="-O2 -m64" && ./configure --disable-bpel-vad --enable-conductor-vad --enable-fct-vad --disable-dbpedia-vad --disable-demo-vad --disable-isparql-vad --disable-ods-vad --disable-sparqldemo-vad --disable-syncml-vad --disable-tutorial-vad --with-readline --program-transform-name="s/isql/isql-v/" \
-        && make && make install \
-        && ln -s /usr/local/virtuoso-opensource/var/lib/virtuoso/ /var/lib/virtuoso \
-        && ln -s /var/lib/virtuoso/db /data \
-        && cd .. \
-        && rm -r /virtuoso-opensource-${VIRTUOSO_COMMIT} \
-        && apt remove --purge -y build-essential autotools-dev autoconf automake unzip wget net-tools libtool flex bison gperf gawk m4 libssl-dev libreadline-dev \
-        && apt autoremove -y \
-        && apt autoclean
+# Set Virtuoso commit SHA to Virtuoso 7.2.4 (20/03/2017)
+ENV VIRTUOSO_COMMIT a5d0a8fa3ce49fe60cfbe5bd2021a02daae23a32
+
+# Install Virtuoso prerequisites and crudini Python lib
+# download virtuoso from gitref
+RUN apt-get update &&\
+    apt-get install -y curl build-essential debhelper autotools-dev autoconf automake unzip wget net-tools \
+    libtool flex bison gperf gawk m4 libssl-dev libreadline-dev libreadline-dev openssl &&\
+    curl -sSk -o virtuoso.tar.gz https://codeload.github.com/openlink/virtuoso-opensource/legacy.tar.gz/${VIRTUOSO_COMMIT} &&\
+    mkdir -p /virtuoso && tar -C /virtuoso --strip-components=1 -xzf virtuoso.tar.gz &&\
+    rm -rf virtuoso.tar.gz &&\
+    cd /virtuoso &&\
+    ./autogen.sh &&\
+    CFLAGS="-O2 -m64" && export CFLAGS && ./configure --disable-bpel-vad --enable-conductor-vad \
+      --disable-dbpedia-vad --disable-demo-vad --disable-isparql-vad --disable-ods-vad --disable-sparqldemo-vad \
+      --disable-syncml-vad --disable-tutorial-vad --with-readline --program-transform-name="s/isql/isql-v/" &&\
+    make && make install &&\
+    ln -s /usr/local/virtuoso-opensource/var/lib/virtuoso/ /var/lib/virtuoso &&\
+    ln -s /var/lib/virtuoso/db /data &&\
+    rm -rf /virtuoso &&\
+    apt-get purge -y build-essential libtool flex bison m4 &&\
+    apt-get autoremove -y &&\
+    apt-get clean
 
 # Add Virtuoso bin to the PATH
 ENV PATH /usr/local/virtuoso-opensource/bin/:$PATH
