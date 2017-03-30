@@ -7,6 +7,9 @@ build:
 	docker-compose build virtuoso &&\
 	docker-compose up --force-recreate --no-deps -d virtuoso
 
+run:
+	docker-compose up -d virtuoso || true
+
 stop:
 	docker-compose stop virtuoso || true
 
