@@ -2,13 +2,13 @@
 
 build:
 	@echo "======= FORCE RECREATING image ======\n"
-	docker stop virtuoso && true &&\
+	docker stop virtuoso || true &&\
 	docker rm -f virtuoso || true &&\
-	docker build virtuoso &&\
-	docker up --force-recreate --no-deps -d virtuoso
+	docker build -t digibib/virtuoso . &&\
+	docker run -d --name virtuoso digibib/virtuoso
 
 run:
-	docker up -d virtuoso || true
+	docker run -d --name virtuoso digibib/virtuoso
 
 stop:
 	docker stop virtuoso || true
