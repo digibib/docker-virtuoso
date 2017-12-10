@@ -44,6 +44,9 @@ COPY virtuoso.sh /virtuoso.sh
 # Add crudini tool
 RUN apt-get install -y crudini && apt-get clean
 
+# Add crudini tool
+RUN apt-get install -y crudini && apt-get clean
+
 VOLUME /data
 WORKDIR /data
 EXPOSE 8890
